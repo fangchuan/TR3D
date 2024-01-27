@@ -10,7 +10,7 @@ from mmdet.core import eval_map
 from .builder import DATASETS
 from .custom_3d import Custom3DDataset
 from .pipelines import Compose
-
+import torch
 
 @DATASETS.register_module()
 class IGibsonDataset(Custom3DDataset):
@@ -241,12 +241,15 @@ class IGibsonDataset(Custom3DDataset):
         """
         assert out_dir is not None, "Expect out_dir, got none."
         pipeline = self._get_pipeline(pipeline)
+        # print(f'pipeline: {pipeline}')
         for i, result in enumerate(results):
             data_info = self.data_infos[i]
             pts_path = data_info["pts_path"]
             file_name = osp.split(pts_path)[-1].split(".")[0]
-            print(f"file_name: {file_name}")
-            points = self._extract_data(i, pipeline, ["points"])
+            # print(f"file_name: {file_name}")
+            points = self._extract_data(i, pipeline, "points")
+            # print(f"points: {points.shape}")
+            
             # scale colors to [0, 255]
             points = points.numpy()
             # points[:, 3:] *= 255
@@ -254,6 +257,7 @@ class IGibsonDataset(Custom3DDataset):
             gt_bboxes = self.get_ann_info(i)["gt_bboxes_3d"]
             gt_corners = gt_bboxes.corners.numpy() if len(gt_bboxes) else None
             gt_labels = self.get_ann_info(i)["gt_labels_3d"]
+            # print(f'gt_labels: {gt_labels}')
             pred_bboxes = result["boxes_3d"]
             pred_corners = pred_bboxes.corners.numpy() if len(pred_bboxes) else None
             pred_labels = result["labels_3d"]

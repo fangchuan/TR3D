@@ -232,7 +232,7 @@ class IGibsonData(object):
             j += 1
         return ss
     
-    def get_infos(self, num_workers=4, has_label=True, sample_id_list=None, show_results=True):
+    def get_infos(self, num_workers=4, has_label=True, sample_id_list=None, show_results=False):
         """Get data infos.
 
         This method gets information from the raw data.
@@ -286,8 +286,13 @@ class IGibsonData(object):
 
             # save points
             mmcv.mkdir_or_exist(osp.join(self.root_dir, 'points'))
-            pc_upright_depth_subsampled.tofile(
+            pc_upright_depth_subsampled.astype(np.float32).tofile(
                 osp.join(self.root_dir, 'points', f'{sample_idx}.bin'))
+            # import open3d as o3d
+            # pcd = o3d.geometry.PointCloud()
+            # pcd.points = o3d.utility.Vector3dVector(pc_upright_depth_subsampled[:,:3])
+            # pcd.colors = o3d.utility.Vector3dVector(pc_upright_depth_subsampled[:,3:6]/255)
+            # o3d.io.write_point_cloud(osp.join(self.root_dir, 'points', f'{sample_idx}.ply'), pcd)
 
             info['pts_path'] = osp.join('points', f'{sample_idx}.bin')
 

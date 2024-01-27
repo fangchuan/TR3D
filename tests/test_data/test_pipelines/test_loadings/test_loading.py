@@ -19,6 +19,24 @@ from mmdet3d.datasets.pipelines import (LoadAnnotations3D,
 
 
 def test_load_points_from_indoor_file():
+    # test on IGibson dataset with shifted height
+    igibson_info = mmcv.load('./tests/data/igibson/igibson_infos.pkl')
+    igibson_load_points_from_file = LoadPointsFromFile(
+        coord_type='DEPTH', load_dim=6, shift_height=True)
+    igibson_results = dict()
+    data_path = './tests/data/igibson'
+    igibson_info = igibson_info[0]
+    igibson_results['pts_filename'] = osp.join(data_path,
+                                               igibson_info['pts_path'])
+    print(f"igibsion_results pts_filename: {igibson_results['pts_filename']}")
+    igibson_results = igibson_load_points_from_file(igibson_results)
+    sunrgbd_point_cloud = igibson_results['points'].tensor.numpy()
+    import open3d as o3d
+    pcd = o3d.geometry.PointCloud()
+    pcd.points = o3d.utility.Vector3dVector(sunrgbd_point_cloud[:, :3])
+    o3d.io.write_point_cloud("./tests/data/igibson/igibson_points.ply", pcd)
+    assert sunrgbd_point_cloud.shape == (50000, 4)
+    
     # test on SUN RGB-D dataset with shifted height
     sunrgbd_info = mmcv.load('./tests/data/sunrgbd/sunrgbd_infos.pkl')
     sunrgbd_load_points_from_file = LoadPointsFromFile(
@@ -374,3 +392,14 @@ def test_normalize_points_color():
     assert np.allclose(points.coord, coord)
     assert np.allclose(points.color,
                        (color - np.array(color_mean)[None, :]) / 255.0)
+
+
+if __name__ == '__main__':
+    test_load_points_from_indoor_file()
+    # test_load_points_from_outdoor_file()
+    # test_load_annotations3D()
+    # test_load_segmentation_mask()
+    # test_load_points_from_multi_sweeps()
+    # test_load_image_from_file_mono_3d()
+    # test_point_seg_class_mapping()
+    # test_normalize_points_color()

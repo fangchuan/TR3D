@@ -76,8 +76,10 @@ def _write_oriented_bbox(scene_bbox, out_filename):
 
 def _write_oriented_bbox_v2(corners, labels, out_filename):
     colors = np.multiply([
-        plt.cm.get_cmap('nipy_spectral', 19)((i * 5 + 11) % 18 + 1)[:3] for i in range(18)
+        plt.cm.get_cmap('nipy_spectral', 19)((i * 5 + 11) % 18 + 1)[:3] for i in range(57)
     ], 255).astype(np.uint8).tolist()
+    # print(f'colors: {len(colors)}')
+    # print(f'labels: {labels}')
     with open(out_filename, 'w') as file:
         for i, (corner, label) in enumerate(zip(corners, labels)):
             c = colors[label]

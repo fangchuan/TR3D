@@ -198,6 +198,7 @@ class SUNRGBDDataset(Custom3DDataset):
             file_name = osp.split(pts_path)[-1].split('.')[0]
             points, img_metas, img = self._extract_data(
                 i, pipeline, ['points', 'img_metas', 'img'])
+            print(f'points.shape: {points.shape}')
             # scale colors to [0, 255]
             points = points.numpy()
             points[:, 3:] *= 255
