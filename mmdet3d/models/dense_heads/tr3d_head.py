@@ -2,8 +2,8 @@ try:
     import MinkowskiEngine as ME
 except ImportError:
     import warnings
-    warnings.warn(
-        'Please follow `getting_started.md` to install MinkowskiEngine.`')
+
+    warnings.warn("Please follow `getting_started.md` to install MinkowskiEngine.`")
 
 import torch
 from mmcv.cnn import bias_init_with_prob
@@ -17,16 +17,18 @@ from mmdet.core.bbox.builder import BBOX_ASSIGNERS, build_assigner
 
 @HEADS.register_module()
 class TR3DHead(BaseModule):
-    def __init__(self,
-                 n_classes,
-                 in_channels,
-                 n_reg_outs,
-                 voxel_size,
-                 assigner,
-                 bbox_loss=dict(type='AxisAlignedIoULoss', reduction='none'),
-                 cls_loss=dict(type='FocalLoss', reduction='none'),
-                 train_cfg=None,
-                 test_cfg=None):
+    def __init__(
+        self,
+        n_classes,
+        in_channels,
+        n_reg_outs,
+        voxel_size,
+        assigner,
+        bbox_loss=dict(type="AxisAlignedIoULoss", reduction="none"),
+        cls_loss=dict(type="FocalLoss", reduction="none"),
+        train_cfg=None,
+        test_cfg=None,
+    ):
         super(TR3DHead, self).__init__()
         self.voxel_size = voxel_size
         self.assigner = build_assigner(assigner)
@@ -37,15 +39,13 @@ class TR3DHead(BaseModule):
         self._init_layers(n_classes, in_channels, n_reg_outs)
 
     def _init_layers(self, n_classes, in_channels, n_reg_outs):
-        self.bbox_conv = ME.MinkowskiConvolution(
-            in_channels, n_reg_outs, kernel_size=1, bias=True, dimension=3)
-        self.cls_conv = ME.MinkowskiConvolution(
-            in_channels, n_classes, kernel_size=1, bias=True, dimension=3)
+        self.bbox_conv = ME.MinkowskiConvolution(in_channels, n_reg_outs, kernel_size=1, bias=True, dimension=3)
+        self.cls_conv = ME.MinkowskiConvolution(in_channels, n_classes, kernel_size=1, bias=True, dimension=3)
 
     def init_weights(self):
-        nn.init.normal_(self.bbox_conv.kernel, std=.01)
-        nn.init.normal_(self.cls_conv.kernel, std=.01)
-        nn.init.constant_(self.cls_conv.bias, bias_init_with_prob(.01))
+        nn.init.normal_(self.bbox_conv.kernel, std=0.01)
+        nn.init.normal_(self.cls_conv.kernel, std=0.01)
+        nn.init.constant_(self.cls_conv.bias, bias_init_with_prob(0.01))
 
     # per level
     def _forward_single(self, x):
@@ -86,10 +86,16 @@ class TR3DHead(BaseModule):
 
         # axis-aligned case: x, y, z, w, h, l -> x1, y1, z1, x2, y2, z2
         return torch.stack(
-            (bbox[..., 0] - bbox[..., 3] / 2, bbox[..., 1] - bbox[..., 4] / 2,
-             bbox[..., 2] - bbox[..., 5] / 2, bbox[..., 0] + bbox[..., 3] / 2,
-             bbox[..., 1] + bbox[..., 4] / 2, bbox[..., 2] + bbox[..., 5] / 2),
-            dim=-1)
+            (
+                bbox[..., 0] - bbox[..., 3] / 2,
+                bbox[..., 1] - bbox[..., 4] / 2,
+                bbox[..., 2] - bbox[..., 5] / 2,
+                bbox[..., 0] + bbox[..., 3] / 2,
+                bbox[..., 1] + bbox[..., 4] / 2,
+                bbox[..., 2] + bbox[..., 5] / 2,
+            ),
+            dim=-1,
+        )
 
     @staticmethod
     def _bbox_pred_to_bbox(points, bbox_pred):
@@ -107,13 +113,7 @@ class TR3DHead(BaseModule):
         x_center = points[:, 0] + bbox_pred[:, 0]
         y_center = points[:, 1] + bbox_pred[:, 1]
         z_center = points[:, 2] + bbox_pred[:, 2]
-        base_bbox = torch.stack([
-            x_center,
-            y_center,
-            z_center,
-            bbox_pred[:, 3],
-            bbox_pred[:, 4],
-            bbox_pred[:, 5]], -1)
+        base_bbox = torch.stack([x_center, y_center, z_center, bbox_pred[:, 3], bbox_pred[:, 4], bbox_pred[:, 5]], -1)
 
         # axis-aligned case
         if bbox_pred.shape[1] == 6:
@@ -121,23 +121,23 @@ class TR3DHead(BaseModule):
 
         # rotated case: ..., sin(2a)ln(q), cos(2a)ln(q)
         scale = bbox_pred[:, 3] + bbox_pred[:, 4]
-        q = torch.exp(
-            torch.sqrt(
-                torch.pow(bbox_pred[:, 6], 2) + torch.pow(bbox_pred[:, 7], 2)))
+        q = torch.exp(torch.sqrt(torch.pow(bbox_pred[:, 6], 2) + torch.pow(bbox_pred[:, 7], 2)))
         alpha = 0.5 * torch.atan2(bbox_pred[:, 6], bbox_pred[:, 7])
         return torch.stack(
-            (x_center, y_center, z_center, scale / (1 + q), scale /
-             (1 + q) * q, bbox_pred[:, 5] + bbox_pred[:, 4], alpha),
-            dim=-1)
+            (
+                x_center,
+                y_center,
+                z_center,
+                scale / (1 + q),
+                scale / (1 + q) * q,
+                bbox_pred[:, 5] + bbox_pred[:, 4],
+                alpha,
+            ),
+            dim=-1,
+        )
 
     # per scene
-    def _loss_single(self,
-                     bbox_preds,
-                     cls_preds,
-                     points,
-                     gt_bboxes,
-                     gt_labels,
-                     img_meta):
+    def _loss_single(self, bbox_preds, cls_preds, points, gt_bboxes, gt_labels, img_meta):
         assigned_ids = self.assigner.assign(points, gt_bboxes, gt_labels, img_meta)
         bbox_preds = torch.cat(bbox_preds)
         cls_preds = torch.cat(cls_preds)
@@ -163,15 +163,14 @@ class TR3DHead(BaseModule):
             if pos_bbox_preds.shape[1] == 6:
                 pos_bbox_targets = pos_bbox_targets[:, :6]
             bbox_loss = self.bbox_loss(
-                self._bbox_to_loss(
-                    self._bbox_pred_to_bbox(pos_points, pos_bbox_preds)),
-                self._bbox_to_loss(pos_bbox_targets))            
+                self._bbox_to_loss(self._bbox_pred_to_bbox(pos_points, pos_bbox_preds)),
+                self._bbox_to_loss(pos_bbox_targets),
+            )
         else:
             bbox_loss = None
         return bbox_loss, cls_loss, pos_mask
 
-    def _loss(self, bbox_preds, cls_preds, points,
-              gt_bboxes, gt_labels, img_metas):
+    def _loss(self, bbox_preds, cls_preds, points, gt_bboxes, gt_labels, img_metas):
         bbox_losses, cls_losses, pos_masks = [], [], []
         for i in range(len(img_metas)):
             bbox_loss, cls_loss, pos_mask = self._loss_single(
@@ -180,19 +179,20 @@ class TR3DHead(BaseModule):
                 points=[x[i] for x in points],
                 img_meta=img_metas[i],
                 gt_bboxes=gt_bboxes[i],
-                gt_labels=gt_labels[i])
+                gt_labels=gt_labels[i],
+            )
             if bbox_loss is not None:
                 bbox_losses.append(bbox_loss)
             cls_losses.append(cls_loss)
             pos_masks.append(pos_mask)
         return dict(
             bbox_loss=torch.mean(torch.cat(bbox_losses)),
-            cls_loss=torch.sum(torch.cat(cls_losses)) / torch.sum(torch.cat(pos_masks)))
+            cls_loss=torch.sum(torch.cat(cls_losses)) / torch.sum(torch.cat(pos_masks)),
+        )
 
     def forward_train(self, x, gt_bboxes, gt_labels, img_metas):
         bbox_preds, cls_preds, points = self(x)
-        return self._loss(bbox_preds, cls_preds, points,
-                          gt_bboxes, gt_labels, img_metas)
+        return self._loss(bbox_preds, cls_preds, points, gt_bboxes, gt_labels, img_metas)
 
     def _nms(self, bboxes, scores, img_meta):
         """Multi-class nms for a single scene.
@@ -219,18 +219,13 @@ class TR3DHead(BaseModule):
             if yaw_flag:
                 nms_function = nms3d
             else:
-                class_bboxes = torch.cat(
-                    (class_bboxes, torch.zeros_like(class_bboxes[:, :1])),
-                    dim=1)
+                class_bboxes = torch.cat((class_bboxes, torch.zeros_like(class_bboxes[:, :1])), dim=1)
                 nms_function = nms3d_normal
 
-            nms_ids = nms_function(class_bboxes, class_scores,
-                                   self.test_cfg.iou_thr)
+            nms_ids = nms_function(class_bboxes, class_scores, self.test_cfg.iou_thr)
             nms_bboxes.append(class_bboxes[nms_ids])
             nms_scores.append(class_scores[nms_ids])
-            nms_labels.append(
-                bboxes.new_full(
-                    class_scores[nms_ids].shape, i, dtype=torch.long))
+            nms_labels.append(bboxes.new_full(class_scores[nms_ids].shape, i, dtype=torch.long))
 
         if len(nms_bboxes):
             nms_bboxes = torch.cat(nms_bboxes, dim=0)
@@ -238,8 +233,8 @@ class TR3DHead(BaseModule):
             nms_labels = torch.cat(nms_labels, dim=0)
         else:
             nms_bboxes = bboxes.new_zeros((0, bboxes.shape[1]))
-            nms_scores = bboxes.new_zeros((0, ))
-            nms_labels = bboxes.new_zeros((0, ))
+            nms_scores = bboxes.new_zeros((0,))
+            nms_labels = bboxes.new_zeros((0,))
 
         if yaw_flag:
             box_dim = 7
@@ -248,11 +243,7 @@ class TR3DHead(BaseModule):
             box_dim = 6
             with_yaw = False
             nms_bboxes = nms_bboxes[:, :6]
-        nms_bboxes = img_meta['box_type_3d'](
-            nms_bboxes,
-            box_dim=box_dim,
-            with_yaw=with_yaw,
-            origin=(.5, .5, .5))
+        nms_bboxes = img_meta["box_type_3d"](nms_bboxes, box_dim=box_dim, with_yaw=with_yaw, origin=(0.5, 0.5, 0.5))
 
         return nms_bboxes, nms_scores, nms_labels
 
@@ -279,7 +270,8 @@ class TR3DHead(BaseModule):
                 bbox_preds=[x[i] for x in bbox_preds],
                 cls_preds=[x[i] for x in cls_preds],
                 points=[x[i] for x in points],
-                img_meta=img_metas[i])
+                img_meta=img_metas[i],
+            )
             results.append(result)
         return results
 
@@ -288,7 +280,7 @@ class TR3DHead(BaseModule):
         return self._get_bboxes(bbox_preds, cls_preds, points, img_metas)
 
 
-@BBOX_ASSIGNERS.register_module() 
+@BBOX_ASSIGNERS.register_module()
 class TR3DAssigner:
     def __init__(self, top_pts_threshold, label2level):
         # top_pts_threshold: per box
@@ -303,8 +295,9 @@ class TR3DAssigner:
     def assign(self, points, gt_bboxes, gt_labels, img_meta):
         # -> object id or -1 for each point
         float_max = points[0].new_tensor(1e8)
-        levels = torch.cat([points[i].new_tensor(i, dtype=torch.long).expand(len(points[i]))
-                            for i in range(len(points))])
+        levels = torch.cat(
+            [points[i].new_tensor(i, dtype=torch.long).expand(len(points[i])) for i in range(len(points))]
+        )
         points = torch.cat(points)
         n_points = len(points)
         n_boxes = len(gt_bboxes)
@@ -318,17 +311,21 @@ class TR3DAssigner:
 
         # condition 1: fix level for label
         label2level = gt_labels.new_tensor(self.label2level)
+        # print(f"label2level.shape: {label2level.shape}")
         label_levels = label2level[gt_labels].unsqueeze(0).expand(n_points, n_boxes)
+        # print(f"label_levels.shape: {label_levels.shape}")
         point_levels = torch.unsqueeze(levels, 1).expand(n_points, n_boxes)
+        # print(f"point_levels.shape: {point_levels.shape}")
         level_condition = label_levels == point_levels
+        # print(f"level_condition: {level_condition}")
 
         # condition 2: keep topk location per box by center distance
         center = boxes[..., :3]
         center_distances = torch.sum(torch.pow(center - points, 2), dim=-1)
         center_distances = torch.where(level_condition, center_distances, float_max)
-        topk_distances = torch.topk(center_distances,
-                                    min(self.top_pts_threshold + 1, len(center_distances)),
-                                    largest=False, dim=0).values[-1]
+        topk_distances = torch.topk(
+            center_distances, min(self.top_pts_threshold + 1, len(center_distances)), largest=False, dim=0
+        ).values[-1]
         topk_condition = center_distances < topk_distances.unsqueeze(0)
 
         # condition 3.0: only closest object to point
