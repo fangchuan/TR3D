@@ -21,25 +21,56 @@ from .pipelines import (AffineResize, BackgroundPointsFilter, GlobalAlignment,
                         VoxelBasedPointSampler)
 # yapf: enable
 from .s3dis_dataset import S3DISDataset, S3DISSegDataset
-from .scannet_dataset import (ScanNetDataset, ScanNetInstanceSegDataset,
-                              ScanNetSegDataset, ScanNetInstanceSegV2Dataset)
+from .scannet_dataset import ScanNetDataset, ScanNetInstanceSegDataset, ScanNetSegDataset, ScanNetInstanceSegV2Dataset
 from .semantickitti_dataset import SemanticKITTIDataset
 from .sunrgbd_dataset import SUNRGBDDataset
+from .igibson_dataset import IGibsonDataset
 from .utils import get_loading_pipeline
 from .waymo_dataset import WaymoDataset
 
 __all__ = [
-    'KittiDataset', 'KittiMonoDataset', 'build_dataloader', 'DATASETS',
-    'build_dataset', 'NuScenesDataset', 'NuScenesMonoDataset', 'LyftDataset',
-    'ObjectSample', 'RandomFlip3D', 'ObjectNoise', 'GlobalRotScaleTrans',
-    'PointShuffle', 'ObjectRangeFilter', 'PointsRangeFilter',
-    'LoadPointsFromFile', 'S3DISSegDataset', 'S3DISDataset',
-    'NormalizePointsColor', 'IndoorPatchPointSample', 'IndoorPointSample',
-    'PointSample', 'LoadAnnotations3D', 'GlobalAlignment', 'SUNRGBDDataset',
-    'ScanNetDataset', 'ScanNetSegDataset', 'ScanNetInstanceSegDataset',
-    'SemanticKITTIDataset', 'Custom3DDataset', 'Custom3DSegDataset',
-    'LoadPointsFromMultiSweeps', 'WaymoDataset', 'BackgroundPointsFilter',
-    'VoxelBasedPointSampler', 'get_loading_pipeline', 'RandomDropPointsColor',
-    'RandomJitterPoints', 'ObjectNameFilter', 'AffineResize',
-    'RandomShiftScale', 'LoadPointsFromDict', 'PIPELINES'
+    "KittiDataset",
+    "KittiMonoDataset",
+    "build_dataloader",
+    "DATASETS",
+    "build_dataset",
+    "NuScenesDataset",
+    "NuScenesMonoDataset",
+    "LyftDataset",
+    "ObjectSample",
+    "RandomFlip3D",
+    "ObjectNoise",
+    "GlobalRotScaleTrans",
+    "PointShuffle",
+    "ObjectRangeFilter",
+    "PointsRangeFilter",
+    "LoadPointsFromFile",
+    "S3DISSegDataset",
+    "S3DISDataset",
+    "NormalizePointsColor",
+    "IndoorPatchPointSample",
+    "IndoorPointSample",
+    "PointSample",
+    "LoadAnnotations3D",
+    "GlobalAlignment",
+    "SUNRGBDDataset",
+    "IGibsonDataset",
+    "ScanNetDataset",
+    "ScanNetSegDataset",
+    "ScanNetInstanceSegDataset",
+    "SemanticKITTIDataset",
+    "Custom3DDataset",
+    "Custom3DSegDataset",
+    "LoadPointsFromMultiSweeps",
+    "WaymoDataset",
+    "BackgroundPointsFilter",
+    "VoxelBasedPointSampler",
+    "get_loading_pipeline",
+    "RandomDropPointsColor",
+    "RandomJitterPoints",
+    "ObjectNameFilter",
+    "AffineResize",
+    "RandomShiftScale",
+    "LoadPointsFromDict",
+    "PIPELINES",
 ]

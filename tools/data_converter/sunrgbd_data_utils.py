@@ -216,6 +216,22 @@ class SUNRGBDData(object):
                             if obj.classname in self.cat2label.keys()
                         ],
                         axis=0)  # (K,8)
+                if True:
+                    from mmdet3d.core import ( show_result)
+                    import os
+                    gt_bboxes_3d = annotations['gt_boxes_upright_depth']
+                    print(f'gt_bboxes_3d.shape: {gt_bboxes_3d.shape}')
+                    out_dir = osp.join(self.root_dir, 'data_vis')
+                    os.makedirs(out_dir, exist_ok=True)
+                    show_result(
+                        points=pc_upright_depth,
+                        gt_bboxes=gt_bboxes_3d,
+                        pred_bboxes=None,
+                        show=False,
+                        out_dir=out_dir,
+                        filename=str(sample_idx),
+                        snapshot=False,
+                        pred_labels=None)
                 info['annos'] = annotations
             return info
 

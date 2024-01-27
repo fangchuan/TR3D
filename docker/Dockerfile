@@ -19,6 +19,9 @@ RUN git clone https://github.com/samsunglabs/tr3d.git /mmdetection3d
 WORKDIR /mmdetection3d
 RUN pip install --no-cache-dir -e .
 
+ENV TORCH_CUDA_ARCH_LIST="7.5 8.0 8.6+PTX"
+ENV TCNN_CUDA_ARCHITECTURES=90;89;86;80;75
+
 # Install MinkowskiEngine
 RUN apt-get -y install libopenblas-dev
 RUN pip install -U git+https://github.com/NVIDIA/MinkowskiEngine@405b39cb7e68c2ec1b4ac8c4b4ca9fa6fcfcb2fc -v --no-deps \

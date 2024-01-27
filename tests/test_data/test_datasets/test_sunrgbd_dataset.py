@@ -100,6 +100,7 @@ def test_getitem():
         root_path, ann_file, pipelines, modality=modality)
     data = sunrgbd_dataset[0]
     points = data['points']._data
+    print(f'points: {points.shape}')
     gt_bboxes_3d = data['gt_bboxes_3d']._data
     gt_labels_3d = data['gt_labels_3d']._data
     file_name = data['img_metas']._data['file_name']
@@ -326,3 +327,9 @@ def test_show():
     mmcv.check_file_exist(img_pred_path)
     mmcv.check_file_exist(img_gt_file)
     tmp_dir.cleanup()
+
+
+if __name__ == '__main__':
+    test_getitem()
+    # test_evaluate()
+    # test_show()
